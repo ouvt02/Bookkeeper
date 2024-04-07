@@ -4,11 +4,11 @@
 
 from bookkeeper.models.category import Category
 from bookkeeper.models.expense import Expense
-from bookkeeper.repository.memory_repository import MemoryRepository
+from bookkeeper.repository.sqlite_repository import SqliteRepository
 from bookkeeper.utils import read_tree
 
-cat_repo = MemoryRepository[Category]()
-exp_repo = MemoryRepository[Expense]()
+cat_repo = SqliteRepository[Category]('Category', Category)
+exp_repo = SqliteRepository[Expense]('Expense', Expense)
 
 cats = '''
 продукты
@@ -20,7 +20,8 @@ cats = '''
 одежда
 '''.splitlines()
 
-Category.create_from_tree(read_tree(cats), cat_repo)
+if len(cat_repo.get_all()) == 0:
+    Category.create_from_tree(read_tree(cats), cat_repo)
 
 while True:
     try:
@@ -33,6 +34,17 @@ while True:
         print(*cat_repo.get_all(), sep='\n')
     elif cmd == 'расходы':
         print(*exp_repo.get_all(), sep='\n')
+    # elif cmd.startswith('удалить'):
+    #     args = cmd.split(' ')
+    #     exp_repo.delete(int(args[1]))
+    # elif cmd.startswith('получить'):
+    #     args = cmd.split(' ')
+    #     print(exp_repo.get(int(args[1])))
+    # elif cmd.startswith('изменить'):
+    #     args = cmd.split(' ')
+    #     obj = cat_repo.get_all({'name': args[1]})[0]
+    #     obj.name = args[2]
+    #     cat_repo.update(obj)
     elif cmd[0].isdecimal():
         amount, name = cmd.split(maxsplit=1)
         try:
